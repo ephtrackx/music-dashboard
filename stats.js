@@ -1,5 +1,5 @@
 window.dashboardStats = {
-  "lastUpdated": "22.05.2026, 14:55:43",
+  "lastUpdated": "26.05.2026, 13:23:36",
   "platforms": {
     "youtube": {
       "views": 68056
@@ -15,7 +15,7 @@ window.dashboardStats = {
   "history": [
     {
       "date": "22.05.2026",
-      "timestamp": 1779450943185,
+      "timestamp": 1779459487910,
       "ytViews": 68056,
       "ytSubs": 171,
       "scPlays": 18714,
@@ -24,22 +24,46 @@ window.dashboardStats = {
       "bcSubs": 16,
       "totalPlays": 88876,
       "totalSubs": 246
+    },
+    {
+      "date": "25.05.2026",
+      "timestamp": 1779699648041,
+      "ytViews": 68064,
+      "ytSubs": 171,
+      "scPlays": 18716,
+      "scSubs": 59,
+      "bcPlays": 2106,
+      "bcSubs": 16,
+      "totalPlays": 88886,
+      "totalSubs": 246
+    },
+    {
+      "date": "26.05.2026",
+      "timestamp": 1779791016995,
+      "ytViews": 68066,
+      "ytSubs": 171,
+      "scPlays": 18719,
+      "scSubs": 59,
+      "bcPlays": 2106,
+      "bcSubs": 16,
+      "totalPlays": 88891,
+      "totalSubs": 246
     }
   ],
   "current": {
     "youtube": {
-      "views": 68056,
+      "views": 68066,
       "subs": 171
     },
     "soundcloud": {
-      "plays": 18714,
+      "plays": 18719,
       "subs": 59
     },
     "bandcamp": {
       "plays": 2106,
       "subs": 16
     },
-    "totalAudioVideoViews": 88876,
+    "totalAudioVideoViews": 88891,
     "totalSubscribers": 246
   }
 };

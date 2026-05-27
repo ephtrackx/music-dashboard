@@ -1,5 +1,5 @@
 window.dashboardStats = {
-  "lastUpdated": "26.05.2026, 13:32:29",
+  "lastUpdated": "27.05.2026, 13:07:43",
   "platforms": {
     "youtube": {
       "views": 68056
@@ -48,22 +48,34 @@ window.dashboardStats = {
       "bcSubs": 16,
       "totalPlays": 88891,
       "totalSubs": 246
+    },
+    {
+      "date": "27.05.2026",
+      "timestamp": 1779876463541,
+      "ytViews": 68079,
+      "ytSubs": 171,
+      "scPlays": 18814,
+      "scSubs": 60,
+      "bcPlays": 2110,
+      "bcSubs": 16,
+      "totalPlays": 89003,
+      "totalSubs": 247
     }
   ],
   "current": {
     "youtube": {
-      "views": 68066,
+      "views": 68079,
       "subs": 171
     },
     "soundcloud": {
-      "plays": 18719,
-      "subs": 59
+      "plays": 18814,
+      "subs": 60
     },
     "bandcamp": {
-      "plays": 2106,
+      "plays": 2110,
       "subs": 16
     },
-    "totalAudioVideoViews": 88891,
-    "totalSubscribers": 246
+    "totalAudioVideoViews": 89003,
+    "totalSubscribers": 247
   }
 };

@@ -126,11 +126,9 @@
         }
     </style>
     <script>
-        // Перевірка авторизації до повного рендерингу сторінки
+        // Перевірка авторизації
         (function() {
-            // Хеш для пароля: FoxCore2026
-            const secureHash = "Rm94Q29yZTIwMjY="; 
-            
+            const secureHash = "Rm94Q29yZTIwMjY="; // Пароль: FoxCore2026
             let pass = localStorage.getItem('music_dashboard_token');
             
             if (!pass || btoa(pass) !== secureHash) {
@@ -144,7 +142,6 @@
                     return;
                 }
             }
-            // Якщо пароль підійшов — робимо сторінку видимою
             document.documentElement.style.opacity = "1";
         })();
     </script>
@@ -171,12 +168,12 @@
             <div class="stat-card bandcamp">
                 <div class="card-label">Bandcamp</div>
                 <div class="card-value" id="bcEarnings">0</div>
-                <div class="card-subtext" id="bcStats">0 переглядів / 0 фенів</div>
+                <div class="card-subtext" id="bcStats">0 підписників</div>
             </div>
             <div class="stat-card total">
-                <div class="card-label">Загальне охоплення</div>
+                <div class="card-label">Загальні стрими</div>
                 <div class="card-value" id="totalReach">0</div>
-                <div class="card-subtext">Сумарні метрики проєкту</div>
+                <div class="card-subtext" id="totalSubs">0 сумарних підписників</div>
             </div>
         </div>
 
@@ -190,37 +187,40 @@
 
     <script>
         function initDashboard() {
-            // Сумісність з обома варіантами імен змінних у твоїх скриптах
-            const data = window.musicStats || window.musicData;
+            // Зчитуємо саме ту змінну, яку створює твій скрипт
+            const data = window.dashboardStats;
             
             if (!data) {
-                console.error("Помилка: Дані аналітики не знайдені в window.musicStats або window.musicData");
+                console.error("Помилка: Дані не знайдені в window.dashboardStats");
                 return;
             }
 
-            // Заповнення текстових полів аналітики
+            // Заповнення часу оновлення
             document.getElementById('updateTime').innerText = `Оновлено: ${data.lastUpdated || '--'}`;
             
+            const cur = data.current || {};
+            
             // YouTube
-            document.getElementById('ytViews').innerText = Number(data.youtube?.views || 0).toLocaleString('uk-UA');
-            document.getElementById('ytSubs').innerText = `${Number(data.youtube?.subscribers || 0).toLocaleString('uk-UA')} підписників`;
+            document.getElementById('ytViews').innerText = Number(cur.youtube?.views || 0).toLocaleString('uk-UA');
+            document.getElementById('ytSubs').innerText = `${Number(cur.youtube?.subs || 0).toLocaleString('uk-UA')} підписників`;
             
             // SoundCloud
-            document.getElementById('scPlays').innerText = Number(data.soundcloud?.plays || 0).toLocaleString('uk-UA');
-            document.getElementById('scFollowers').innerText = `${Number(data.soundcloud?.followers || 0).toLocaleString('uk-UA')} фоловерів`;
+            document.getElementById('scPlays').innerText = Number(cur.soundcloud?.plays || 0).toLocaleString('uk-UA');
+            document.getElementById('scFollowers').innerText = `${Number(cur.soundcloud?.subs || 0).toLocaleString('uk-UA')} фоловерів`;
             
             // Bandcamp
-            document.getElementById('bcEarnings').innerText = `${Number(data.bandcamp?.sales || 0).toLocaleString('uk-UA')} продажів`;
-            document.getElementById('bcStats').innerText = `${Number(data.bandcamp?.views || 0).toLocaleString('uk-UA')} переглядів | ${Number(data.bandcamp?.followers || 0).toLocaleString('uk-UA')} підписників`;
+            document.getElementById('bcEarnings').innerText = Number(cur.bandcamp?.plays || 0).toLocaleString('uk-UA');
+            document.getElementById('bcStats').innerText = `${Number(cur.bandcamp?.subs || 0).toLocaleString('uk-UA')} підписників`;
             
             // Total
-            document.getElementById('totalReach').innerText = Number(data.summary?.totalReach || 0).toLocaleString('uk-UA');
+            document.getElementById('totalReach').innerText = Number(cur.totalAudioVideoViews || 0).toLocaleString('uk-UA');
+            document.getElementById('totalSubs').innerText = `${Number(cur.totalSubscribers || 0).toLocaleString('uk-UA')} сумарних підписників`;
 
-            // Будуємо графік історії росту, якщо є дані
+            // Будуємо графік історії росту
             if (!data.history || data.history.length === 0) return;
 
             const labels = data.history.map(item => item.date);
-            const reachDataset = data.history.map(item => item.totalReach);
+            const reachDataset = data.history.map(item => item.totalPlays); // Використовуємо поле totalPlays з твоєї історії
 
             const ctx = document.getElementById('reachChart').getContext('2d');
             new Chart(ctx, {
@@ -229,7 +229,7 @@
                     labels: labels,
                     datasets: [
                         {
-                            label: 'Загальне охоплення',
+                            label: 'Сумарні прослуховування',
                             data: reachDataset,
                             borderColor: '#b4befe',
                             backgroundColor: 'transparent',

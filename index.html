@@ -61,7 +61,7 @@
             font-size: 14px;
         }
 
-        /* Сетіка карток */
+        /* Сітка карток */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -126,10 +126,9 @@
         }
     </style>
     <script>
-        // Проста і надійна перевірка авторизації до завантаження інтерфейсу
+        // Перевірка авторизації до повного рендерингу сторінки
         (function() {
-            // Зашифрований у Base64 пароль. Зараз тут зашифровано слово: FoxCore2026
-            // Якщо хочеш інший пароль — просто скажи мені, я згенерую новий рядок.
+            // Хеш для пароля: FoxCore2026
             const secureHash = "Rm94Q29yZTIwMjY="; 
             
             let pass = localStorage.getItem('music_dashboard_token');
@@ -145,7 +144,7 @@
                     return;
                 }
             }
-            // Якщо все ок — відкриваємо сторінку
+            // Якщо пароль підійшов — робимо сторінку видимою
             document.documentElement.style.opacity = "1";
         })();
     </script>
@@ -191,12 +190,13 @@
 
     <script>
         function initDashboard() {
-            if (!window.musicStats) {
-                console.error("Помилка: Дані stats.js не завантажені.");
+            // Сумісність з обома варіантами імен змінних у твоїх скриптах
+            const data = window.musicStats || window.musicData;
+            
+            if (!data) {
+                console.error("Помилка: Дані аналітики не знайдені в window.musicStats або window.musicData");
                 return;
             }
-
-            const data = window.musicStats;
 
             // Заповнення текстових полів аналітики
             document.getElementById('updateTime').innerText = `Оновлено: ${data.lastUpdated || '--'}`;

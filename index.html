@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FOXCORE // Music Dashboard v2.3</title>
+    <title>FOXCORE // Music Dashboard v2.5</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         /* Ховаємо весь інтерфейс за замовчуванням для безпеки */
@@ -121,7 +121,7 @@
 
         .chart-container {
             position: relative;
-            height: 350px;
+            height: 450px; /* Трохи збільшив висоту для 4 ліній */
             width: 100%;
         }
     </style>
@@ -178,7 +178,7 @@
         </div>
 
         <div class="chart-section">
-            <h2>Динаміка росту охоплення</h2>
+            <h2>Динаміка росту платформ</h2>
             <div class="chart-container">
                 <canvas id="reachChart"></canvas>
             </div>
@@ -187,7 +187,6 @@
 
     <script>
         function initDashboard() {
-            // Зчитуємо саме ту змінну, яку створює твій скрипт
             const data = window.dashboardStats;
             
             if (!data) {
@@ -195,32 +194,30 @@
                 return;
             }
 
-            // Заповнення часу оновлення
             document.getElementById('updateTime').innerText = `Оновлено: ${data.lastUpdated || '--'}`;
             
             const cur = data.current || {};
             
-            // YouTube
             document.getElementById('ytViews').innerText = Number(cur.youtube?.views || 0).toLocaleString('uk-UA');
             document.getElementById('ytSubs').innerText = `${Number(cur.youtube?.subs || 0).toLocaleString('uk-UA')} підписників`;
             
-            // SoundCloud
             document.getElementById('scPlays').innerText = Number(cur.soundcloud?.plays || 0).toLocaleString('uk-UA');
             document.getElementById('scFollowers').innerText = `${Number(cur.soundcloud?.subs || 0).toLocaleString('uk-UA')} фоловерів`;
             
-            // Bandcamp
             document.getElementById('bcEarnings').innerText = Number(cur.bandcamp?.plays || 0).toLocaleString('uk-UA');
             document.getElementById('bcStats').innerText = `${Number(cur.bandcamp?.subs || 0).toLocaleString('uk-UA')} підписників`;
             
-            // Total
             document.getElementById('totalReach').innerText = Number(cur.totalAudioVideoViews || 0).toLocaleString('uk-UA');
             document.getElementById('totalSubs').innerText = `${Number(cur.totalSubscribers || 0).toLocaleString('uk-UA')} сумарних підписників`;
 
-            // Будуємо графік історії росту
             if (!data.history || data.history.length === 0) return;
 
+            // Масиви даних з історії платформ
             const labels = data.history.map(item => item.date);
-            const reachDataset = data.history.map(item => item.totalPlays); // Використовуємо поле totalPlays з твоєї історії
+            const ytDataset = data.history.map(item => item.ytViews || 0);
+            const scDataset = data.history.map(item => item.scPlays || 0);
+            const bcDataset = data.history.map(item => item.bcPlays || 0);
+            const totalDataset = data.history.map(item => item.totalPlays || 0);
 
             const ctx = document.getElementById('reachChart').getContext('2d');
             new Chart(ctx, {
@@ -229,20 +226,54 @@
                     labels: labels,
                     datasets: [
                         {
-                            label: 'Сумарні прослуховування',
-                            data: reachDataset,
+                            label: 'Загальні стрими',
+                            data: totalDataset,
                             borderColor: '#b4befe',
                             backgroundColor: 'transparent',
-                            borderWidth: 2,
-                            tension: 0.3,
-                            pointBackgroundColor: '#7aa2f7',
+                            borderWidth: 3,
+                            tension: 0.2,
+                            pointBackgroundColor: '#b4befe',
                             pointRadius: 4
+                        },
+                        {
+                            label: 'YouTube',
+                            data: ytDataset,
+                            borderColor: '#e06c75',
+                            backgroundColor: 'transparent',
+                            borderWidth: 2,
+                            tension: 0.2,
+                            pointBackgroundColor: '#e06c75',
+                            pointRadius: 3
+                        },
+                        {
+                            label: 'SoundCloud',
+                            data: scDataset,
+                            borderColor: '#f0a986',
+                            backgroundColor: 'transparent',
+                            borderWidth: 2,
+                            tension: 0.2,
+                            pointBackgroundColor: '#f0a986',
+                            pointRadius: 3
+                        },
+                        {
+                            label: 'Bandcamp',
+                            data: bcDataset,
+                            borderColor: '#7aa2f7',
+                            backgroundColor: 'transparent',
+                            borderWidth: 2,
+                            tension: 0.2,
+                            pointBackgroundColor: '#7aa2f7',
+                            pointRadius: 3
                         }
                     ]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false, 
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
                     plugins: { 
                         legend: { 
                             display: true,
@@ -253,7 +284,42 @@
                                 boxWidth: 15,
                                 padding: 15
                             }
-                        } 
+                        },
+                        tooltip: {
+                            backgroundColor: '#1a1d24',
+                            titleColor: '#dee0e6',
+                            bodyColor: '#dee0e6',
+                            borderColor: '#232733',
+                            borderWidth: 1,
+                            padding: 12,
+                            boxPadding: 6,
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    let value = context.parsed.y;
+                                    let datasetIndex = context.datasetIndex;
+                                    let dataIndex = context.dataIndex;
+                                    
+                                    let formattedValue = Number(value).toLocaleString('uk-UA');
+                                    let changeText = '';
+
+                                    // Розрахунок приросту порівняно з попередньою точкою
+                                    if (dataIndex > 0) {
+                                        let prevValue = context.chart.data.datasets[datasetIndex].data[dataIndex - 1];
+                                        let diff = value - prevValue;
+                                        if (diff > 0) {
+                                            changeText = ` (+${Number(diff).toLocaleString('uk-UA')})`;
+                                        } else if (diff < 0) {
+                                            changeText = ` (${Number(diff).toLocaleString('uk-UA')})`;
+                                        } else {
+                                            changeText = ' (+0)';
+                                        }
+                                    }
+
+                                    return `${label}: ${formattedValue}${changeText}`;
+                                }
+                            }
+                        }
                     },
                     scales: {
                         x: { 

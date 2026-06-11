@@ -3,65 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FOXCORE // Music Dashboard v2.5</title>
+    <title>FOXCORE // Music Dashboard</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    
     <style>
-        /* Ховаємо весь інтерфейс за замовчуванням для безпеки */
-        html {
-            background-color: #14161d;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-        
         :root {
-            /* Пастельна muted палітра */
-            --bg-color: #14161d;
-            --card-bg: #1a1d24;
-            --card-border: #232733;
+            --bg-color: #0f1014;
+            --card-bg: rgba(26, 29, 36, 0.6);
+            --card-border: 1px solid rgba(255, 255, 255, 0.08);
             --text-main: #dee0e6;
             --text-muted: #727a8e;
             
-            /* М'які пастельні кольори платформ */
             --youtube: #e06c75;       
             --soundcloud: #f0a986;    
             --bandcamp: #7aa2f7;      
-            --total: #b4befe;         
+            --total: #b4befe;
+            
+            --blur-amount: 15px;
+            --border-radius: 0.75rem;
+            --transition: all 500ms cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        html {
+            background-color: var(--bg-color);
+            background-image: radial-gradient(circle at 50% -20%, #1c1f2e, #0f1014);
+            min-height: 100dvh;
+            opacity: 0;
+            transition: opacity 0.5s ease;
         }
 
         body {
-            background-color: var(--bg-color);
+            background-color: transparent;
             color: var(--text-main);
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             margin: 0;
-            padding: 40px 20px;
+            padding: clamp(2rem, 5vw, 4rem) 1.5rem;
             display: flex;
             flex-direction: column;
             align-items: center;
         }
 
-        .dashboard-container {
-            max-width: 1200px;
-            width: 100%;
-        }
+        .dashboard-container { max-width: 1280px; width: 100%; }
+        header { margin-bottom: clamp(2rem, 5vw, 4rem); }
+        h1 { font-size: clamp(1.5rem, 3vw, 2.25rem); font-weight: 700; margin: 0 0 0.5rem 0; letter-spacing: -0.5px; }
+        .last-updated { color: var(--text-muted); font-size: 0.875rem; font-weight: 500; }
 
-        header {
-            margin-bottom: 40px;
-            text-align: left;
-        }
-
-        header h1 {
-            font-size: 24px;
-            font-weight: 600;
-            margin: 0 0 8px 0;
-            letter-spacing: -0.5px;
-        }
-
-        .last-updated {
-            color: var(--text-muted);
-            font-size: 14px;
-        }
-
-        /* Сітка карток */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -70,75 +59,53 @@
         }
 
         .stat-card {
-            background-color: var(--card-bg);
-            border: 1px solid var(--card-border);
-            border-radius: 12px;
+            background: var(--card-bg);
+            backdrop-filter: blur(var(--blur-amount));
+            border: var(--card-border);
+            border-radius: var(--border-radius);
             padding: 24px;
-            display: flex;
-            flex-direction: column;
+            transition: var(--transition);
+            cursor: pointer;
+            position: relative;
         }
 
-        .stat-card .card-label {
-            color: var(--text-muted);
-            font-size: 13px;
-            font-weight: 500;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 12px;
-        }
+        .stat-card:hover { transform: translateY(-4px); border-color: rgba(255,255,255,0.2); }
+        .stat-card.active { border-color: rgba(255,255,255,0.4); background: rgba(35, 40, 50, 0.8); }
 
-        .stat-card .card-value {
-            font-size: 32px;
-            font-weight: 700;
-            margin-bottom: 8px;
-            letter-spacing: -1px;
-        }
+        .card-label { color: var(--text-muted); font-size: 0.875rem; font-weight: 500; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+        .card-value { font-family: 'JetBrains Mono', monospace; font-size: 2rem; font-weight: 700; margin-bottom: 8px; letter-spacing: -1px; }
 
         .stat-card.youtube .card-value { color: var(--youtube); }
         .stat-card.soundcloud .card-value { color: var(--soundcloud); }
         .stat-card.bandcamp .card-value { color: var(--bandcamp); }
         .stat-card.total .card-value { color: var(--total); }
 
-        .stat-card .card-subtext {
-            color: var(--text-muted);
-            font-size: 13px;
-        }
+        .card-subtext { color: var(--text-muted); font-size: 0.875rem; }
 
-        /* Блок з графіком */
         .chart-section {
-            background-color: var(--card-bg);
-            border: 1px solid var(--card-border);
-            border-radius: 12px;
+            background: var(--card-bg);
+            backdrop-filter: blur(var(--blur-amount));
+            border: var(--card-border);
+            border-radius: var(--border-radius);
             padding: 24px;
-            margin-bottom: 20px;
+            transition: var(--transition);
         }
 
-        .chart-section h2 {
-            font-size: 18px;
-            font-weight: 600;
-            margin: 0 0 24px 0;
-        }
-
-        .chart-container {
-            position: relative;
-            height: 450px; /* Трохи збільшив висоту для 4 ліній */
-            width: 100%;
-        }
+        .chart-section h2 { font-size: 1.125rem; font-weight: 600; margin: 0 0 24px 0; }
+        .chart-container { position: relative; height: 450px; width: 100%; }
     </style>
+    
     <script>
-        // Перевірка авторизації
         (function() {
-            const secureHash = "Rm94Q29yZTIwMjY="; // Пароль: FoxCore2026
+            const secureHash = "Rm94Q29yZTIwMjY=";
             let pass = localStorage.getItem('music_dashboard_token');
-            
             if (!pass || btoa(pass) !== secureHash) {
                 pass = prompt("Введіть пароль доступу:");
                 if (pass && btoa(pass) === secureHash) {
                     localStorage.setItem('music_dashboard_token', pass);
                 } else {
                     alert("Доступ заборонено!");
-                    localStorage.removeItem('music_dashboard_token');
-                    document.write('<body style="background:#14161d;color:#e06c75;text-align:center;padding-top:200px;font-family:sans-serif;"><h2>403 // СТОП</h2></body>');
+                    document.write('<body style="background:#0f1014;color:#e06c75;text-align:center;padding-top:200px;font-family:sans-serif;"><h2>403 // СТОП</h2></body>');
                     return;
                 }
             }
@@ -155,22 +122,22 @@
         </header>
 
         <div class="stats-grid">
-            <div class="stat-card youtube">
+            <div class="stat-card youtube" onclick="changePlatform('youtube')">
                 <div class="card-label">YouTube</div>
                 <div class="card-value" id="ytViews">0</div>
                 <div class="card-subtext" id="ytSubs">0 підписників</div>
             </div>
-            <div class="stat-card soundcloud">
+            <div class="stat-card soundcloud" onclick="changePlatform('soundcloud')">
                 <div class="card-label">SoundCloud</div>
                 <div class="card-value" id="scPlays">0</div>
                 <div class="card-subtext" id="scFollowers">0 фоловерів</div>
             </div>
-            <div class="stat-card bandcamp">
+            <div class="stat-card bandcamp" onclick="changePlatform('bandcamp')">
                 <div class="card-label">Bandcamp</div>
                 <div class="card-value" id="bcEarnings">0</div>
                 <div class="card-subtext" id="bcStats">0 підписників</div>
             </div>
-            <div class="stat-card total">
+            <div class="stat-card total active" id="totalCard" onclick="changePlatform('total')">
                 <div class="card-label">Загальні стрими</div>
                 <div class="card-value" id="totalReach">0</div>
                 <div class="card-subtext" id="totalSubs">0 сумарних підписників</div>
@@ -178,7 +145,7 @@
         </div>
 
         <div class="chart-section">
-            <h2>Динаміка росту платформ</h2>
+            <h2 id="chartTitle">Динаміка: Загальні стрими</h2>
             <div class="chart-container">
                 <canvas id="reachChart"></canvas>
             </div>
@@ -186,155 +153,124 @@
     </div>
 
     <script>
-        function initDashboard() {
+        let myChart = null;
+
+        function changePlatform(platform) {
             const data = window.dashboardStats;
+            if (!data) return;
+
+            document.querySelectorAll('.stat-card').forEach(el => el.classList.remove('active'));
             
-            if (!data) {
-                console.error("Помилка: Дані не знайдені в window.dashboardStats");
-                return;
+            let dataset = [];
+            let color = '#b4befe';
+            let title = 'Загальні стрими';
+
+            if (platform === 'youtube') {
+                document.querySelector('.stat-card.youtube').classList.add('active');
+                dataset = data.history.map(item => item.ytViews || 0);
+                color = '#e06c75';
+                title = 'YouTube';
+            } else if (platform === 'soundcloud') {
+                document.querySelector('.stat-card.soundcloud').classList.add('active');
+                dataset = data.history.map(item => item.scPlays || 0);
+                color = '#f0a986';
+                title = 'SoundCloud';
+            } else if (platform === 'bandcamp') {
+                document.querySelector('.stat-card.bandcamp').classList.add('active');
+                dataset = data.history.map(item => item.bcPlays || 0);
+                color = '#7aa2f7';
+                title = 'Bandcamp';
+            } else {
+                document.getElementById('totalCard').classList.add('active');
+                dataset = data.history.map(item => item.totalPlays || 0);
+                color = '#b4befe';
+                title = 'Загальні стрими';
             }
 
+            document.getElementById('chartTitle').innerText = `Динаміка: ${title}`;
+
+            // Плавне оновлення графіку
+            myChart.data.labels = data.history.map(item => item.date);
+            myChart.data.datasets[0].data = dataset;
+            myChart.data.datasets[0].borderColor = color;
+            myChart.data.datasets[0].backgroundColor = `${color}15`;
+            myChart.data.datasets[0].pointHoverBackgroundColor = color;
+            myChart.update('active');
+        }
+
+        function initDashboard() {
+            const data = window.dashboardStats;
+            if (!data) return;
+
             document.getElementById('updateTime').innerText = `Оновлено: ${data.lastUpdated || '--'}`;
-            
             const cur = data.current || {};
             
             document.getElementById('ytViews').innerText = Number(cur.youtube?.views || 0).toLocaleString('uk-UA');
             document.getElementById('ytSubs').innerText = `${Number(cur.youtube?.subs || 0).toLocaleString('uk-UA')} підписників`;
-            
             document.getElementById('scPlays').innerText = Number(cur.soundcloud?.plays || 0).toLocaleString('uk-UA');
             document.getElementById('scFollowers').innerText = `${Number(cur.soundcloud?.subs || 0).toLocaleString('uk-UA')} фоловерів`;
-            
             document.getElementById('bcEarnings').innerText = Number(cur.bandcamp?.plays || 0).toLocaleString('uk-UA');
             document.getElementById('bcStats').innerText = `${Number(cur.bandcamp?.subs || 0).toLocaleString('uk-UA')} підписників`;
-            
             document.getElementById('totalReach').innerText = Number(cur.totalAudioVideoViews || 0).toLocaleString('uk-UA');
             document.getElementById('totalSubs').innerText = `${Number(cur.totalSubscribers || 0).toLocaleString('uk-UA')} сумарних підписників`;
 
-            if (!data.history || data.history.length === 0) return;
-
-            // Масиви даних з історії платформ
-            const labels = data.history.map(item => item.date);
-            const ytDataset = data.history.map(item => item.ytViews || 0);
-            const scDataset = data.history.map(item => item.scPlays || 0);
-            const bcDataset = data.history.map(item => item.bcPlays || 0);
-            const totalDataset = data.history.map(item => item.totalPlays || 0);
-
+            // Ініціалізація Chart.js
             const ctx = document.getElementById('reachChart').getContext('2d');
-            new Chart(ctx, {
+            myChart = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: labels,
-                    datasets: [
-                        {
-                            label: 'Загальні стрими',
-                            data: totalDataset,
-                            borderColor: '#b4befe',
-                            backgroundColor: 'transparent',
-                            borderWidth: 3,
-                            tension: 0.2,
-                            pointBackgroundColor: '#b4befe',
-                            pointRadius: 4
-                        },
-                        {
-                            label: 'YouTube',
-                            data: ytDataset,
-                            borderColor: '#e06c75',
-                            backgroundColor: 'transparent',
-                            borderWidth: 2,
-                            tension: 0.2,
-                            pointBackgroundColor: '#e06c75',
-                            pointRadius: 3
-                        },
-                        {
-                            label: 'SoundCloud',
-                            data: scDataset,
-                            borderColor: '#f0a986',
-                            backgroundColor: 'transparent',
-                            borderWidth: 2,
-                            tension: 0.2,
-                            pointBackgroundColor: '#f0a986',
-                            pointRadius: 3
-                        },
-                        {
-                            label: 'Bandcamp',
-                            data: bcDataset,
-                            borderColor: '#7aa2f7',
-                            backgroundColor: 'transparent',
-                            borderWidth: 2,
-                            tension: 0.2,
-                            pointBackgroundColor: '#7aa2f7',
-                            pointRadius: 3
-                        }
-                    ]
+                    labels: data.history.map(item => item.date),
+                    datasets: [{
+                        label: 'Стрими',
+                        data: data.history.map(item => item.totalPlays || 0),
+                        borderColor: '#b4befe',
+                        backgroundColor: '#b4befe15',
+                        borderWidth: 2,
+                        tension: 0.3,
+                        fill: true,
+                        pointRadius: 0, 
+                        pointHoverRadius: 6,
+                        pointHoverBorderWidth: 2,
+                        pointHoverBorderColor: '#ffffff'
+                    }]
                 },
                 options: {
                     responsive: true,
-                    maintainAspectRatio: false, 
-                    interaction: {
-                        mode: 'index',
-                        intersect: false,
-                    },
+                    maintainAspectRatio: false,
+                    animation: { duration: 500, easing: 'easeInOutQuad' },
                     plugins: { 
-                        legend: { 
-                            display: true,
-                            position: 'top',
-                            labels: {
-                                color: '#727a8e',
-                                font: { size: 12, family: 'sans-serif' },
-                                boxWidth: 15,
-                                padding: 15
-                            }
-                        },
+                        legend: { display: false },
                         tooltip: {
-                            backgroundColor: '#1a1d24',
-                            titleColor: '#dee0e6',
-                            bodyColor: '#dee0e6',
-                            borderColor: '#232733',
-                            borderWidth: 1,
+                            backgroundColor: 'rgba(26, 29, 36, 0.95)',
                             padding: 12,
-                            boxPadding: 6,
+                            titleFont: { family: 'JetBrains Mono' },
+                            bodyFont: { family: 'JetBrains Mono' },
                             callbacks: {
                                 label: function(context) {
-                                    let label = context.dataset.label || '';
-                                    let value = context.parsed.y;
-                                    let datasetIndex = context.datasetIndex;
-                                    let dataIndex = context.dataIndex;
+                                    const value = context.parsed.y;
+                                    const dataIndex = context.dataIndex;
+                                    const dataset = context.dataset.data;
                                     
-                                    let formattedValue = Number(value).toLocaleString('uk-UA');
-                                    let changeText = '';
-
-                                    // Розрахунок приросту порівняно з попередньою точкою
+                                    let changeText = "";
                                     if (dataIndex > 0) {
-                                        let prevValue = context.chart.data.datasets[datasetIndex].data[dataIndex - 1];
-                                        let diff = value - prevValue;
-                                        if (diff > 0) {
-                                            changeText = ` (+${Number(diff).toLocaleString('uk-UA')})`;
-                                        } else if (diff < 0) {
-                                            changeText = ` (${Number(diff).toLocaleString('uk-UA')})`;
-                                        } else {
-                                            changeText = ' (+0)';
-                                        }
+                                        const prevValue = dataset[dataIndex - 1];
+                                        const diff = value - prevValue;
+                                        const sign = diff >= 0 ? "+" : "";
+                                        changeText = ` (${sign}${diff.toLocaleString('uk-UA')})`;
                                     }
-
-                                    return `${label}: ${formattedValue}${changeText}`;
+                                    
+                                    return `${value.toLocaleString('uk-UA')}${changeText}`;
                                 }
                             }
                         }
                     },
                     scales: {
-                        x: { 
-                            grid: { color: '#232733' }, 
-                            ticks: { color: '#727a8e', font: { size: 11 } } 
-                        },
-                        y: { 
-                            grid: { color: '#232733' }, 
-                            ticks: { color: '#727a8e', font: { size: 11 } } 
-                        }
+                        x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#727a8e' } },
+                        y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#727a8e' } }
                     }
                 }
             });
         }
-
         window.onload = initDashboard;
     </script>
 </body>

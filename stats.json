@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "22.06.2026, 12:25:51",
+  "lastUpdated": "23.06.2026, 12:00:29",
   "platforms": {
     "youtube": {
       "views": 68056
@@ -264,6 +264,18 @@
       "bcSubs": 16,
       "totalPlays": 90773,
       "totalSubs": 250
+    },
+    {
+      "date": "23.06.2026",
+      "timestamp": 1782205229331,
+      "ytViews": 68690,
+      "ytSubs": 173,
+      "scPlays": 19963,
+      "scSubs": 61,
+      "bcPlays": 2131,
+      "bcSubs": 16,
+      "totalPlays": 90784,
+      "totalSubs": 250
     }
   ],
   "current": {
@@ -272,14 +284,14 @@
       "subs": 173
     },
     "soundcloud": {
-      "plays": 19956,
+      "plays": 19963,
       "subs": 61
     },
     "bandcamp": {
-      "plays": 2127,
+      "plays": 2131,
       "subs": 16
     },
-    "totalAudioVideoViews": 90773,
+    "totalAudioVideoViews": 90784,
     "totalSubscribers": 250
   }
 }

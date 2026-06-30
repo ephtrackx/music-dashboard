@@ -1,5 +1,5 @@
 window.dashboardStats = {
-  "lastUpdated": "30.06.2026, 12:00:29",
+  "lastUpdated": "30.06.2026, 12:25:14",
   "platforms": {
     "youtube": {
       "views": 68056
@@ -315,7 +315,7 @@ window.dashboardStats = {
     },
     {
       "date": "30.06.2026",
-      "timestamp": 1782810029267,
+      "timestamp": 1782811514719,
       "ytViews": 68715,
       "ytSubs": 173,
       "scPlays": 19969,

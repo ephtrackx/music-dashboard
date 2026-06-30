@@ -146,6 +146,10 @@
             font-weight: 700; 
             margin-bottom: 8px; 
             letter-spacing: -0.03em; 
+            display: flex;
+            align-items: baseline;
+            flex-wrap: wrap;
+            gap: 8px;
         }
 
         .stat-card.youtube .card-value { color: var(--youtube); }
@@ -167,8 +171,7 @@
 
         .chart-section h2 { font-size: 1.5rem; font-weight: 700; margin: 0 0 32px 0; letter-spacing: -0.02em; will-change: transform, opacity; }
         
-        /* Автоматичне додавання текста до заголовків через CSS */
-        #chartTitle::after { content: " за останній місяць"; }
+        /* Автоматичне додавання текста до заголовків через CSS прибрано, бо тепер текст формується динамічно в JS */
         
         .chart-container { position: relative; height: 450px; width: 100%; will-change: transform; }
 
@@ -231,28 +234,28 @@
         <div class="stats-grid">
             <div class="stat-card youtube" onclick="changePlatform('youtube')">
                 <div class="card-label">YouTube</div>
-                <div class="card-value" id="ytViews">0</div>
+                <div class="card-value"><span id="ytViews">0</span><span id="ytViewsDiff" style="font-size: 1.1rem; font-weight: 500; opacity: 0.8; margin-left: auto;"></span></div>
                 <div class="card-subtext" id="ytSubs">0 підписників</div>
             </div>
             <div class="stat-card soundcloud" onclick="changePlatform('soundcloud')">
                 <div class="card-label">SoundCloud</div>
-                <div class="card-value" id="scPlays">0</div>
+                <div class="card-value"><span id="scPlays">0</span><span id="scPlaysDiff" style="font-size: 1.1rem; font-weight: 500; opacity: 0.8; margin-left: auto;"></span></div>
                 <div class="card-subtext" id="scFollowers">0 фоловерів</div>
             </div>
             <div class="stat-card bandcamp" onclick="changePlatform('bandcamp')">
                 <div class="card-label">Bandcamp</div>
-                <div class="card-value" id="bcEarnings">0</div>
+                <div class="card-value"><span id="bcEarnings">0</span><span id="bcEarningsDiff" style="font-size: 1.1rem; font-weight: 500; opacity: 0.8; margin-left: auto;"></span></div>
                 <div class="card-subtext" id="bcStats">0 підписників</div>
             </div>
             <div class="stat-card total active" id="totalCard" onclick="changePlatform('total')">
                 <div class="card-label">Загальні стрими</div>
-                <div class="card-value" id="totalReach">0</div>
+                <div class="card-value"><span id="totalReach">0</span><span id="totalReachDiff" style="font-size: 1.1rem; font-weight: 500; opacity: 0.8; margin-left: auto;"></span></div>
                 <div class="card-subtext" id="totalSubs">0 сумарних підписників</div>
             </div>
         </div>
 
         <div class="chart-section">
-            <h2 id="chartTitle">Динаміка: Загальні стрими</h2>
+            <h2 id="chartTitle">Динаміка: Загальні стрими за останній місяць</h2>
             <div class="chart-container">
                 <canvas id="reachChart"></canvas>
             </div>
@@ -275,30 +278,41 @@
             let dataset = [];
             let color = '#bd00ff';
             let title = 'Загальні стрими';
+            let diffValue = 0;
+
+            // Вираховуємо точний приріст суворо за відображуваний діапазон історії (останній місяць)
+            const firstNode = data.history[0] || {};
+            const lastNode = data.history[data.history.length - 1] || {};
 
             if (platform === 'youtube') {
                 document.querySelector('.stat-card.youtube').classList.add('active');
                 dataset = data.history.map(item => item.ytViews || 0);
                 color = '#ff1a35';
                 title = 'YouTube';
+                diffValue = (lastNode.ytViews || 0) - (firstNode.ytViews || 0);
             } else if (platform === 'soundcloud') {
                 document.querySelector('.stat-card.soundcloud').classList.add('active');
                 dataset = data.history.map(item => item.scPlays || 0);
                 color = '#ff6a00';
                 title = 'SoundCloud';
+                diffValue = (lastNode.scPlays || 0) - (firstNode.scPlays || 0);
             } else if (platform === 'bandcamp') {
                 document.querySelector('.stat-card.bandcamp').classList.add('active');
                 dataset = data.history.map(item => item.bcPlays || 0);
                 color = '#00b0ff';
                 title = 'Bandcamp';
+                diffValue = (lastNode.bcPlays || 0) - (firstNode.bcPlays || 0);
             } else {
                 document.getElementById('totalCard').classList.add('active');
                 dataset = data.history.map(item => item.totalPlays || 0);
                 color = '#bd00ff';
                 title = 'Загальні стрими';
+                diffValue = (lastNode.totalPlays || 0) - (firstNode.totalPlays || 0);
             }
 
-            document.getElementById('chartTitle').innerText = `Динаміка: ${title}`;
+            // Формуємо заголовок із додаванням точного динамічного показника приросту переглядів/стримів
+            const sign = diffValue >= 0 ? "+" : "";
+            document.getElementById('chartTitle').innerText = `Динаміка: ${title} за останній місяць (${sign}${diffValue.toLocaleString('uk-UA')})`;
 
             myChart.data.labels = data.history.map(item => item.date);
             myChart.data.datasets[0].data = dataset;
@@ -314,14 +328,38 @@
             document.getElementById('updateTime').innerText = `Оновлено: ${data.lastUpdated || '--'}`;
             const cur = data.current || {};
             
+            // Розрахунок дельти показників переглядів/прослуховувань за останній місяць (30 днів)
+            const firstNode = data.history[0] || {};
+            const lastNode = data.history[data.history.length - 1] || {};
+            
+            const ytViewsDiff = (lastNode.ytViews || 0) - (firstNode.ytViews || 0);
+            const scPlaysDiff = (lastNode.scPlays || 0) - (firstNode.scPlays || 0);
+            const bcPlaysDiff = (lastNode.bcPlays || 0) - (firstNode.bcPlays || 0);
+            const totalPlaysDiff = (lastNode.totalPlays || 0) - (firstNode.totalPlays || 0);
+
+            // Розрахунок дельти підписників за останній місяць (беремо історичні дані з масиву, якщо вони є, або вираховуємо динамічно)
+            const ytSubsDiff = (cur.youtube?.subs || 0) - (data.history[0]?.ytSubs || cur.youtube?.subs || 0);
+            const scSubsDiff = (cur.soundcloud?.subs || 0) - (data.history[0]?.scSubs || cur.soundcloud?.subs || 0);
+            const bcSubsDiff = (cur.bandcamp?.subs || 0) - (data.history[0]?.bcSubs || cur.bandcamp?.subs || 0);
+            const totalSubsDiff = (cur.totalSubscribers || 0) - (data.history[0]?.totalSubs || cur.totalSubscribers || 0);
+
+            // Виведення основних даних
             document.getElementById('ytViews').innerText = Number(cur.youtube?.views || 0).toLocaleString('uk-UA');
-            document.getElementById('ytSubs').innerText = `${Number(cur.youtube?.subs || 0).toLocaleString('uk-UA')} підписників`;
             document.getElementById('scPlays').innerText = Number(cur.soundcloud?.plays || 0).toLocaleString('uk-UA');
-            document.getElementById('scFollowers').innerText = `${Number(cur.soundcloud?.subs || 0).toLocaleString('uk-UA')} фоловерів`;
             document.getElementById('bcEarnings').innerText = Number(cur.bandcamp?.plays || 0).toLocaleString('uk-UA');
-            document.getElementById('bcStats').innerText = `${Number(cur.bandcamp?.subs || 0).toLocaleString('uk-UA')} підписників`;
             document.getElementById('totalReach').innerText = Number(cur.totalAudioVideoViews || 0).toLocaleString('uk-UA');
-            document.getElementById('totalSubs').innerText = `${Number(cur.totalSubscribers || 0).toLocaleString('uk-UA')} сумарних підписників`;
+
+            // Виведення приросту показників справа від основних цифр
+            document.getElementById('ytViewsDiff').innerText = `+${ytViewsDiff.toLocaleString('uk-UA')}`;
+            document.getElementById('scPlaysDiff').innerText = `+${scPlaysDiff.toLocaleString('uk-UA')}`;
+            document.getElementById('bcEarningsDiff').innerText = `+${bcPlaysDiff.toLocaleString('uk-UA')}`;
+            document.getElementById('totalReachDiff').innerText = `+${totalPlaysDiff.toLocaleString('uk-UA')}`;
+
+            // Додавання приросту підписників у нижні підписи карток
+            document.getElementById('ytSubs').innerText = `${Number(cur.youtube?.subs || 0).toLocaleString('uk-UA')} підписників (+${ytSubsDiff.toLocaleString('uk-UA')})`;
+            document.getElementById('scFollowers').innerText = `${Number(cur.soundcloud?.subs || 0).toLocaleString('uk-UA')} фоловерів (+${scSubsDiff.toLocaleString('uk-UA')})`;
+            document.getElementById('bcStats').innerText = `${Number(cur.bandcamp?.subs || 0).toLocaleString('uk-UA')} підписників (+${bcSubsDiff.toLocaleString('uk-UA')})`;
+            document.getElementById('totalSubs').innerText = `${Number(cur.totalSubscribers || 0).toLocaleString('uk-UA')} сумарних підписників (+${totalSubsDiff.toLocaleString('uk-UA')})`;
 
             const ctx = document.getElementById('reachChart').getContext('2d');
             myChart = new Chart(ctx, {
@@ -386,6 +424,10 @@
                     }
                 }
             });
+
+            // Ініціалізуємо коректний початковий рядок приросту для заголовка за замовчуванням (Total)
+            const sign = totalPlaysDiff >= 0 ? "+" : "";
+            document.getElementById('chartTitle').innerText = `Динаміка: Загальні стрими за останній місяць (${sign}${totalPlaysDiff.toLocaleString('uk-UA')})`;
         }
         window.onload = initDashboard;
     </script>
